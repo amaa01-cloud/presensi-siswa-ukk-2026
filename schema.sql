@@ -1,0 +1,47 @@
+-- schema.sql : DDL aplikasi Presensi Siswa (MariaDB)
+CREATE DATABASE IF NOT EXISTS db presensi
+  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE db presensi;
+
+DROP TABLE IF EXISTS presensi;
+DROP TABLE IF EXISTS siswa;
+DROP TABLE IF EXISTS kelas;
+DROP TABLE IF EXISTS users;
+
+CREATE TABLE users (
+  id         INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  username   VARCHAR(50)  NOT NULL,
+  password   VARCHAR(255) NOT NULL,
+  created_at TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_users_username (username)
+) ENGINE=InnoDB;
+
+CREATE TABLE kelas (
+  id_kelas   INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nama_kelas VARCHAR(50)  NOT NULL,
+  jurusan    VARCHAR(50)  NULL,
+  PRIMARY KEY (id_kelas),
+  UNIQUE KEY uq_kelas_nama (nama_kelas)
+) ENGINE=InnoDB;
+
+-- NISN disimpan sebagai teks agar angka 0 di depan tidak hilang
+CREATE TABLE siswa (
+  nisn     CHAR(10)     NOT NULL,
+  nama     VARCHAR(100) NOT NULL,
+  alamat   VARCHAR(255) NULL,
+  id_kelas INT UNSIGNED NOT NULL,
+  PRIMARY KEY (nisn),
+  CONSTRAINT fk_siswa_kelas FOREIGN KEY (id_kelas)
+    REFERENCES kelas (id_kelas) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE presensi (
+  id            INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  nisn          CHAR(10)     NOT NULL,
+  tanggal_waktu DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  KEY idx_presensi_tanggal (tanggal_waktu),
+  CONSTRAINT fk_presensi_siswa FOREIGN KEY (nisn)
+    REFERENCES siswa (nisn) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB;
